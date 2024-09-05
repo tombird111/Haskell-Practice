@@ -1,0 +1,64 @@
+exec (acomp a) (0,s,[]) == (length (acomp a), s, [aval a s])
+
+Proof:
+--Task 4
+Base cases:
+Let a = N x
+Solving the LHS:
+[Substituting (N x)] = exec (acomp (N x)) (0,s,[])
+[Applying acomp (N x)] = exec ([LOADI x]) (0,s,[])
+[Applying exec to the list] = exec [] (iexec (LOADI x) (0,s,[]))
+[Applying exec to the empty list] = iexec (LOADI x) (0,s,[])
+[Applying iexec with LOADI] = (0 + 1, s, [] ++ [x])
+[Applying the functions the config] = (1,s,[x])
+Solving the RHS:
+length (acomp a) = length([LOADI x]) == 1
+s == s
+[aval a s] = [aval (N x) (s)] = [x]
+
+exec (acomp (N x))(0,s,[]) == (length (acomp (N x)), s, [aval (N x) s])
+For any given value of x where a = (N x)
+
+Let a = V v
+Solving the LHS:
+[Substituting (V v)] = exec (acomp (V v)) (0,s,[])
+[Applying acomp (V v)] = exec ([LOAD v]) (0,s,[])
+[Applying exec to the list] = exec [] (iexec [LOAD v] (0,s,[]))
+[Applying exec to the empty list] = iexec [LOAD v] (0,s,[])
+[Applying iexec with LOAD] = (0 + 1, s, [] ++ [s ! v])
+[Applying the functions within the config] = (1, s, [s ! v])
+Solving the RHS:
+length (acomp v) = length([LOAD v]) == 1
+s == s
+[aval v s] = [aval (V v) (s)] == [s ! v]
+
+LHS == RHS
+exec (acomp (V v))(0,s,[]) == (length (acomp (V v)), s, [aval (V v) s])
+For any given value of v where a = (V v)
+
+Let a = Plus a' a'
+Induction Hypothesis (IH): iexec (acomp (a'))(0,s,[]) == (length (acomp (a')), s, [aval (a') s])
+(Assume that evaluating a' is the same as first compiling it into machine instructions, then executing it)
+
+Solving the LHS:
+[Substituting (Plus a' a')] = exec (acomp (Plus a' a')) (0,s,[])
+[Applying acomp (Plus a' a')] = exec ((acomp a') ++ (acomp a') ++ [ADD]) (0,s,[])
+[Applying exec] = exec (acomp a' ++ [ADD]) (iexec (acomp a') (0,s,[]))
+[Applying IH] = exec (acomp a' ++ [ADD]) (length (acomp (a')), s, [aval (a') s])
+[Applying exec] = exec [ADD] (iexec (acomp a') (length (acomp a')), s, [aval (a') s]))
+[Applying iexec] = exec [ADD] ((length (acomp a'))+(length (acomp a')), s, [aval (a') s] ++ [aval (a') s])
+[Appling exec] = exec [] (iexec [ADD] ((length acomp a')+(length acomp a'), s, [aval (a') s] ++ [aval (a') s])
+[Applying exec to the empty list] = iexec [ADD] ((length acomp a')+(length acomp a'), s, [aval (a') s] ++ [aval (a') s])
+[Applying iexec with ADD] = ((length (acomp a')) + (length (acomp a')  + 1, s, (init(init([aval (a') s] ++ [aval (a') s]))) ++ [last(init([aval (a') s] ++ [aval (a') s])) + last([aval (a') s] ++ [aval (a') s])])
+[Let [aval (a') s] ++ [aval (a') s] be x for readability] = ((length acomp a') + (length acomp a') + 1, s, (init(init(x)) ++ [last(init(x)) + last(x)]
+[Applying functions within the config] = (length acomp a') + (length acomp a') + 1, s, [(aval (a') s) + (aval (a') s)])
+Solving the RHS:
+length (acomp Plus a' a') = length(acomp a') + length(acomp a') + length([ADD]) == length(acomp a') + length(acomp a') + 1
+s == s
+[aval Plus a' a' s] == [(aval a' s) + (aval a' s)]
+
+LHS == RHS
+exec (acomp (Plus a' a')) (0,s,[]) == (length (acomp Plus a' a'), s, [aval Plus a' a' s])
+For any given value of a' where a' is an arithmetic expression whose meaning is perserved during compilation.
+a' is any compilable arithmatic expression, which can be either (N x), (V v) or (Plus a' a'), and all of these have been shown to preserve meaning during compilation.
+This proves the correctness of the compiler, as any combination of arithmatic expressions can be compiled to a set of machine instructions with the same effect of evaluating the expression with the interpreter.
